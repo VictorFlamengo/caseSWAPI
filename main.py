@@ -1,6 +1,6 @@
 import json
-from services.search import search_resource
-from services.film_relations import get_film_relations
+from app.services.search import search_resource
+from app.services.film_relations import get_film_relations
 
 def search(request):
     args = request.args
