@@ -1,0 +1,7 @@
+x-google-quota:
+  limits:
+    requests-per-minute:
+      metric: requests
+      unit: "1/min/{project}"
+      values:
+        STANDARD: 60
