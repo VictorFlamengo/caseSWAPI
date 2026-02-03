@@ -1,5 +1,6 @@
 import json
 from services.search import search_resource
+from services.film_relations import get_film_relations
 
 def search(request):
     args = request.args
@@ -15,3 +16,15 @@ def search(request):
         return json.dumps(result), 200
     except Exception as e:
         return {"error": str(e)}, 500
+
+def film_relations(request):
+    film = request.args.get("film")
+    relation = request.args.get("relation")
+
+    if not film or not relation:
+        return {
+            "error": "Parâmetros obrigatórios: film e relation"
+        }, 400
+
+    return get_film_relations(film, relation)
+
