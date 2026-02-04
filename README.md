@@ -144,6 +144,21 @@ Ou:
 
 functions-framework --source main.py --target film_relations --port 8080
 
+🔐 Autenticação
+Produção (GCP)
+
+Em ambiente de produção, a API será exposta através do Google Cloud API Gateway, responsável por:
+
+Autenticação via API Key
+
+Rate limiting
+
+Logs de acesso
+
+Controle de permissões
+
+A autenticação não é implementada diretamente no código da Cloud Function, seguindo boas práticas de arquitetura.
+
 ☁️ Deploy no Google Cloud
 
 Cada função pode ser implantada separadamente:
