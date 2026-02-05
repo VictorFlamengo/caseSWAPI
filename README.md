@@ -1,8 +1,14 @@
-Star Wars API – Cloud Functions (GCP)
+🌌 Star Wars API – Cloud Functions (GCP)
 
-Este projeto foi desenvolvido como parte de um case técnico, utilizando Google Cloud Platform (GCP), Python e Cloud Functions, consumindo dados da API pública SWAPI (Star Wars API).
+Este projeto foi desenvolvido como parte de um case técnico, utilizando Python e Google Cloud Functions, com consumo da API pública SWAPI (Star Wars API).
 
-A aplicação expõe endpoints que permitem consultar dados do universo Star Wars, incluindo buscas genéricas e informações correlacionadas, como personagens, planetas e naves de um filme específico.
+A aplicação expõe endpoints REST que permitem:
+
+Busca genérica por recursos do universo Star Wars
+
+Consulta de informações relacionadas a filmes (personagens, planetas, naves, etc.)
+
+O foco do projeto está em arquitetura limpa, separação de responsabilidades, testabilidade e boas práticas em ambiente cloud.
 
 🚀 Tecnologias Utilizadas
 
@@ -12,40 +18,86 @@ Google Cloud Functions
 
 Functions Framework (execução local)
 
-API Gateway / Apigee (camada de exposição da API)
+Google Cloud API Gateway / Apigee (camada de exposição)
 
-Pytest (testes automatizados)
+Pytest + unittest.mock (testes automatizados)
 
-SWAPI (https://swapi.dev)
+SWAPI – https://swapi.dev
 
 🏗️ Arquitetura da Solução
 
-A aplicação segue uma separação clara de responsabilidades:
+A solução foi projetada utilizando uma arquitetura em camadas, promovendo baixo acoplamento e alta coesão.
 
+Visão Geral da Arquitetura
+Usuário
+   ↓
+API Gateway / Apigee
+   ↓
+Cloud Functions (Flask / Functions Framework)
+   ↓
+Service Layer
+   ↓
+SWAPI Client
+   ↓
+SWAPI (API Externa)
+
+📐 Separação de Responsabilidades
 main.py
-Entry point das Cloud Functions (infraestrutura)
 
-app/
-Contém toda a lógica de negócio da aplicação
+Entry point das Cloud Functions
 
-services/ → regras e processamento dos dados
+Responsável apenas por:
 
-swapi_client.py → comunicação com a SWAPI
+Receber requisições HTTP
+
+Validar parâmetros básicos
+
+Delegar a lógica para a camada de serviços
+
+app/services/
+
+Contém a lógica de negócio
+
+Implementa:
+
+Filtros
+
+Ordenação
+
+Regras de relacionamento entre entidades
+
+Totalmente desacoplada da infraestrutura
+
+app/swapi_client.py
+
+Cliente dedicado para comunicação com a SWAPI
+
+Centraliza:
+
+Requisições HTTP
+
+Normalização de respostas
+
+Tratamento de variações de payload da API externa
 
 tests/
+
 Testes unitários dos serviços
 
-Essa estrutura facilita:
+Uso de mock para evitar dependência de APIs externas
 
-manutenção
+✅ Benefícios dessa Arquitetura
 
-testes
+Facilidade de manutenção
 
-deploy no GCP
+Testes unitários isolados
 
-desacoplamento da infraestrutura
+Clareza no fluxo de dados
 
-📁 Estrutura do Projeto
+Pronta para escalar ou migrar para outras infraestruturas
+
+Adequada para ambientes serverless
+
 starwars-api/
 │
 ├── main.py
@@ -61,57 +113,64 @@ starwars-api/
 │   ├── test_search.py
 │   └── test_film_relations.py
 │
+├── streamlit_app/
+│   ├── search_ui.py
+│   └── film_relations_ui.py
+│
 ├── requirements.txt
 └── README.md
+
 
 🔗 Endpoints Disponíveis
 🔍 1. Busca Genérica
 
-Permite consultar recursos da API do Star Wars com filtro opcional por nome.
+Permite consultar recursos da API Star Wars com filtro opcional por nome e ordenação alfabética.
 
-Endpoint:
+Endpoint
 
 GET /search
 
 
-Parâmetros:
+Parâmetros
 
-type (obrigatório): people, films, planets, starships, vehicles, species
+Parâmetro	Obrigatório	Descrição
+type	Sim	people, films, planets, starships, vehicles, species
+name	Não	Filtro por nome ou título
+order	Não	asc (padrão) ou desc
 
-name (opcional): filtro por nome ou título
+Exemplo
 
-Exemplo:
+GET /search?type=people&name=luke&order=asc
 
-GET /search?type=people&name=luke
+🎬 2. Relações de um Filme
 
-🎬 2. Informações Relacionadas a um Filme
+Permite consultar informações relacionadas a um filme específico.
 
-Permite consultar dados relacionados a um filme específico, como personagens, planetas, naves, veículos ou espécies.
-
-Endpoint:
+Endpoint
 
 GET /film-relations
 
-
-Parâmetros:
-
-film (obrigatório): nome do filme
-
-relation (obrigatório):
-
-characters
-
-planets
-
-starships
-
-vehicles
-
-species
-
-Exemplo:
-
 GET /film-relations?film=A New Hope&relation=characters
+
+Com filtro:
+
+GET /film-relations?film=A New Hope&relation=characters&name=luke
+
+🔄 Fluxo de Execução
+
+O usuário faz uma requisição HTTP
+
+O API Gateway recebe e valida a chamada
+
+A Cloud Function processa a requisição
+
+A camada de serviços executa a lógica de negócio
+
+O cliente SWAPI consulta a API externa
+
+Os dados são filtrados, ordenados e normalizados
+
+A resposta é retornada em JSON
 
 🧪 Testes Automatizados
 
@@ -121,22 +180,26 @@ Busca genérica sem filtro
 
 Busca com filtro por nome
 
+Ordenação alfabética
+
 Consulta de relações de filmes
 
 Validação de parâmetros inválidos
 
-Executar os testes:
+Executar os testes
+
 pytest
 
-▶️ Executando Localmente
-1. Criar ambiente virtual
+▶️ Execução Local
+1️⃣ Criar ambiente virtual
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate
+# Windows: venv\Scripts\activate
 
-2. Instalar dependências
+2️⃣ Instalar dependências
 pip install -r requirements.txt
 
-3. Rodar função localmente
+3️⃣ Executar localmente
 functions-framework --source main.py --target search --port 8080
 
 
@@ -144,20 +207,20 @@ Ou:
 
 functions-framework --source main.py --target film_relations --port 8080
 
-🔐 Autenticação
+🔐 Autenticação e Segurança
 Produção (GCP)
 
-Em ambiente de produção, a API será exposta através do Google Cloud API Gateway, responsável por:
+Em produção, a autenticação é delegada ao Google Cloud API Gateway / Apigee, responsável por:
 
 Autenticação via API Key
 
 Rate limiting
 
-Logs de acesso
+Logs e monitoramento
 
 Controle de permissões
 
-A autenticação não é implementada diretamente no código da Cloud Function, seguindo boas práticas de arquitetura.
+A Cloud Function permanece stateless e sem lógica de autenticação embutida, seguindo boas práticas de arquitetura cloud-native.
 
 ☁️ Deploy no Google Cloud
 
@@ -174,22 +237,52 @@ gcloud functions deploy film_relations \
   --allow-unauthenticated
 
 
-O API Gateway / Apigee pode ser utilizado para centralizar os endpoints e aplicar políticas como autenticação, rate limit e monitoramento.
+O API Gateway pode ser configurado para centralizar os endpoints e aplicar políticas de segurança.
+
+🖥️ Interface de Demonstração (Streamlit)
+
+Foi desenvolvida uma interface em Streamlit com o objetivo de:
+
+Demonstrar o funcionamento da API
+
+Facilitar a visualização dos dados
+
+Apoiar a apresentação do case técnico
+
+Funcionalidades da UI
+
+Seleção de tipo de recurso
+
+Filtro opcional por nome
+
+Ordenação alfabética (A → Z / Z → A)
+
+Consulta de relações entre filmes
+
+Visualização estruturada dos resultados
+
+Executar o Streamlit
+streamlit run streamlit_app/search_ui.py
+
+
+⚠️ O Streamlit não faz parte da arquitetura de produção, sendo utilizado apenas como camada de visualização para demonstração do projeto. 
 
 📌 Considerações Finais
 
 Este projeto demonstra:
 
-uso de Cloud Functions no GCP
+Uso de Cloud Functions no GCP
 
-consumo de APIs externas
+Consumo de APIs externas
 
-organização de código
+Arquitetura em camadas
 
-testes automatizados
+Código limpo e testável
 
-boas práticas de arquitetura
+Boas práticas de backend e cloud
 
 👤 Autor
 
 Emanuel Victor
+Desenvolvedor Backend
+Python • Cloud • APIs • Arquitetura
