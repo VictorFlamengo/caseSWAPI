@@ -9,9 +9,9 @@ VALID_RELATIONS = {
     "species"
 }
 
-def get_film_relations(film_name: str, relation: str):
+def get_film_relations(film_name: str, relation: str, name: str | None = None):
     logger.info(
-        f"Iniciando busca de relações do filme | filme='{film_name}' | relação='{relation}'"
+        f"Iniciando busca de relações do filme | filme='{film_name}' | relação='{relation}' | filtro='{name}'"
     )
 
     if relation not in VALID_RELATIONS:
@@ -59,6 +59,15 @@ def get_film_relations(film_name: str, relation: str):
             "name": data.get("name") or data.get("title"),
             "url": url
         })
+
+    if name:
+        results = [
+            r for r in results
+            if name.lower() in (r.get("name") or "").lower()
+        ]
+        logger.info(
+            f"Filtro aplicado pelo nome | resultados após filtro: {len(results)}"
+        )
 
     logger.info(
         f"Processamento finalizado | filme='{film['title']}' | relação='{relation}' | total={len(results)}"

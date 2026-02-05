@@ -28,11 +28,12 @@ def search(request):
 def film_relations(request):
     film = request.args.get("film")
     relation = request.args.get("relation")
+    name = request.args.get("name")
 
     if not film or not relation:
         return {
             "error": "Parâmetros obrigatórios: film e relation"
         }, 400
 
-    return get_film_relations(film, relation)
+    return get_film_relations(film, relation, name), 200
 
