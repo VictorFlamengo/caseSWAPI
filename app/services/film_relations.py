@@ -9,9 +9,9 @@ VALID_RELATIONS = {
     "species"
 }
 
-def get_film_relations(film_name: str, relation: str):
+def get_film_relations(film_name: str, relation: str, name: str | None = None):
     logger.info(
-        f"Iniciando busca de relações do filme | filme='{film_name}' | relação='{relation}'"
+        f"Iniciando busca de relações do filme | filme='{film_name}' | relação='{relation}' | filtro={repr(name)}"
     )
 
     if relation not in VALID_RELATIONS:
@@ -55,13 +55,27 @@ def get_film_relations(film_name: str, relation: str):
             logger.error(f"Resposta inesperada da SWAPI: {data}")
             continue
 
+        item_name = data.get("name") or data.get("title")
         results.append({
-            "name": data.get("name") or data.get("title"),
+            "name": item_name,
             "url": url
         })
 
+    # Filtrar por nome se fornecido
+    if name:
+        logger.info(f"Aplicando filtro de nome: '{name}'")
+        results = [
+            r for r in results
+            if name.lower() in r.get("name", "").lower()
+        ]
+        logger.info(
+            f"Filtro aplicado pelo nome | resultados após filtro: {len(results)}"
+        )
+    else:
+        logger.info("Nenhum filtro de nome fornecido")
+
     logger.info(
-        f"Processamento finalizado | filme='{film['title']}' | relação='{relation}' | total={len(results)}"
+        f"Processamento finalizado | filme='{film['title']}' | relação='{relation}' | filtro_nome='{name}' | total={len(results)}"
     )
 
     return {
