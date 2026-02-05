@@ -66,9 +66,13 @@ with st.sidebar:
 # ----- ROTEAMENTO DE PÁGINAS -----
 
 if page == "🏠 Home":
-    from pages.home import render
+    from views.home import render
     render()
 
 if page == "🎬 Filmes":
-    from pages.filmes import render
+    from views.filmes import render
+    render()
+
+if page == "🔎 Busca":
+    from views.busca import render
     render()

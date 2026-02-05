@@ -23,8 +23,8 @@ def get_film_relations(film_name: str, relation: str):
         }
 
     logger.info("Buscando lista de filmes na SWAPI")
-    films_response = fetch_resource("films")
-    films = films_response.get("results", [])
+    
+    films = fetch_resource("films")
 
     logger.debug(f"Total de filmes retornados: {len(films)}")
 
@@ -50,6 +50,10 @@ def get_film_relations(film_name: str, relation: str):
         logger.debug(f"Buscando recurso relacionado: {url}")
 
         data = fetch_resource(url, absolute_url=True)
+
+        if not isinstance(data, dict):
+            logger.error(f"Resposta inesperada da SWAPI: {data}")
+            continue
 
         results.append({
             "name": data.get("name") or data.get("title"),

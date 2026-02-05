@@ -24,7 +24,7 @@ def render():
     if st.button("Buscar relações"):
         if not film:
             st.warning("Informe o nome do filme")
-        else:
+        else:   
             params = {"film": film, "relation": relation}
 
             with st.spinner("Consultando o hiper-espaço..."):

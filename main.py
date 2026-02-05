@@ -7,13 +7,21 @@ def search(request):
 
     resource_type = args.get("type")
     name = args.get("name")
+    order = args.get("order", "asc")
 
     if not resource_type:
         return {"error": "Parâmetro 'type' é obrigatório"}, 400
 
+    if order not in ["asc", "desc"]:
+        return {"error": "Parâmetro 'order' deve ser 'asc' ou 'desc'"}, 400
+
     try:
-        result = search_resource(resource_type, name)
-        return json.dumps(result), 200
+        result = search_resource(
+            resource_type=resource_type,
+            name=name,
+            order=order
+        )
+        return result, 200  
     except Exception as e:
         return {"error": str(e)}, 500
 

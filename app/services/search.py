@@ -1,13 +1,12 @@
 from app.logger import logger
 from app.swapi_client import fetch_resource
 
-def search_resource(resource_type, name=None):
+def search_resource(resource_type, name=None, order="asc"):
     logger.info(
-        f"Iniciando busca de recurso | tipo='{resource_type}' | filtro='{name}'"
+        f"Iniciando busca de recurso | tipo='{resource_type}' | filtro='{name}' | ordem='{order}'"
     )
 
-    response = fetch_resource(resource_type)
-    results = response.get("results", [])
+    results = fetch_resource(resource_type)
 
     logger.debug(
         f"Total de registros retornados pela SWAPI antes do filtro: {len(results)}"
@@ -21,6 +20,11 @@ def search_resource(resource_type, name=None):
         logger.info(
             f"Filtro aplicado pelo nome | resultados após filtro: {len(results)}"
         )
+
+    results.sort(
+        key=lambda r: (r.get("name") or r.get("title", "")).lower(),
+        reverse=(order == "desc")
+    )
 
     logger.info(
         f"Busca finalizada | tipo='{resource_type}' | total_resultados={len(results)}"
