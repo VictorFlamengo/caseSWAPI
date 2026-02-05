@@ -1,78 +1,105 @@
 import streamlit as st
 import requests
 
-API_URL = "http://localhost:8080"
+API_URL = "http://localhost:8080/search"
 
 
 def render():
-    st.title("🔎 Busca de Recursos")
-    st.caption("Consuma a API Star Wars aplicando filtros e ordenação")
+    st.set_page_config(
+        page_title="Star Wars API – Case Técnico",
+        layout="centered"
+    )
 
-    # --- FILTROS ---
-    with st.container():
+    st.title("🌌 Star Wars API – Case Técnico")
+    st.markdown(
+        """
+        Interface criada para demonstrar o consumo da API desenvolvida no desafio técnico.
+
+        O endpoint permite **consulta de recursos do universo Star Wars**,  
+        com **filtro opcional por nome** e **ordenação alfabética**.
+        """
+    )
+
+    st.divider()
+
+    # 🔧 FILTROS
+    st.subheader("🔧 Parâmetros da busca")
+
+    with st.form("search_form"):
         resource_type = st.selectbox(
             "🧩 Tipo de recurso",
             ["people", "films", "planets", "starships", "vehicles", "species"]
         )
 
         name = st.text_input(
-            "🔤 Filtro por nome (opcional)",
-            placeholder="Ex: Luke, Tatooine, Falcon..."
+            "🔎 Filtro por nome (opcional)",
+            placeholder="Ex: Luke, Tatooine, Falcon"
         )
 
-        st.subheader("🔠 Ordem alfabética")
-
         order = st.radio(
-            "Ordenar resultados",
+            "🔠 Ordenação alfabética",
             ["asc", "desc"],
             format_func=lambda x: "A → Z" if x == "asc" else "Z → A",
             horizontal=True
         )
 
+        submit = st.form_submit_button("Executar consulta")
+
+    if not submit:
+        return
+
+    # 📡 REQUEST
+    params = {
+        "type": resource_type,
+        "order": order
+    }
+
+    if name:
+        params["name"] = name
+
+    with st.spinner("Consultando a API..."):
+        try:
+            response = requests.get(
+                API_URL,
+                params=params,
+                timeout=20
+            )
+        except Exception:
+            st.error("❌ Não foi possível estabelecer conexão com a API")
+            return
+
     st.divider()
 
-    # --- AÇÃO ---
-    if st.button("🚀 Buscar", use_container_width=True):
-        params = {
-            "type": resource_type,
-            "order": order
-        }
+    # 📊 RESULTADO
+    if response.status_code != 200:
+        try:
+            error = response.json().get("error")
+        except Exception:
+            error = "Erro inesperado"
 
-        if name:
-            params["name"] = name
+        st.error(f"❌ Erro ao consultar a API: {error}")
+        return
 
-        with st.spinner("Buscando na galáxia..."):
-            try:
-                response = requests.get(
-                    f"{API_URL}/search",
-                    params=params,
-                    timeout=20
-                )
-            except Exception:
-                st.error("❌ Não foi possível conectar à API")
-                return
+    data = response.json()
 
-        # --- RESULTADO ---
-        if response.status_code == 200:
-            data = response.json()
+    st.subheader("📊 Resultado da consulta")
 
-            st.success(
-                f"🔍 {data['count']} resultado(s) encontrados "
-                f"(ordem {'A → Z' if order == 'asc' else 'Z → A'})"
-            )
+    st.markdown(
+        f"""
+        **Recurso:** `{resource_type}`  
+        **Ordenação:** {'A → Z' if order == 'asc' else 'Z → A'}  
+        **Total encontrado:** {data['count']}
+        """
+    )
 
-            if data["count"] == 0:
-                st.info("Nenhum resultado encontrado com os filtros aplicados.")
-                return
+    if data["count"] == 0:
+        st.info("Nenhum resultado encontrado com os filtros informados.")
+        return
 
-            for item in data["results"]:
-                with st.expander(item.get("name") or item.get("title")):
-                    st.json(item)
+    # 🧩 LISTAGEM
+    for item in data["results"]:
+        title = item.get("name") or item.get("title")
 
-        else:
-            try:
-                error = response.json().get("error")
-            except Exception:
-                error = "Erro inesperado"
-
-            st.error(f"❌ Erro ao consultar a API: {error}")
+        with st.container(border=True):
+            st.markdown(f"### {title}")
+            st.json(item)
